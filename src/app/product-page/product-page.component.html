@@ -1,0 +1,117 @@
+<mat-sidenav-container class="sidenav-container" [ngClass]="{'dark-mode': isDarkMode}">
+    <!-- Mobile Sidenav with Animation -->
+    <mat-sidenav #sidenav mode="over" [@sidenavAnimation]>
+      <mat-nav-list>
+        <a mat-list-item routerLink="/">Home</a>
+        <a mat-list-item routerLink="/">Invest</a>
+        <a mat-list-item routerLink="/">About Us</a>
+        <a mat-list-item routerLink="/">More</a>
+      </mat-nav-list>
+    </mat-sidenav>
+  
+    <mat-sidenav-content>
+      <!-- Header -->
+      <mat-toolbar color="primary">
+        <button mat-icon-button (click)="sidenav.toggle()" class="mobile-only">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="logo">FinApp</span>
+        <span class="spacer"></span>
+  
+        <div class="desktop-only">
+          <!-- Categories Dropdown -->
+          <button mat-button [matMenuTriggerFor]="categoriesMenu">Invest</button>
+          <mat-menu #categoriesMenu="matMenu">
+            <div *ngFor="let category of categories">
+              <button mat-menu-item [matMenuTriggerFor]="category.menu">
+                <mat-icon>{{ category.icon }}</mat-icon>
+                <span>{{ category.name }}</span>
+              </button>
+              <mat-menu #category.menu="matMenu">
+                <button mat-menu-item *ngFor="let subcategory of category.subcategories">{{ subcategory }}</button>
+              </mat-menu>
+            </div>
+          </mat-menu>
+  
+          <!-- About Us Dropdown -->
+          <button mat-button [matMenuTriggerFor]="aboutMenu">About Us</button>
+          <mat-menu #aboutMenu="matMenu">
+            <button mat-menu-item>Company Info</button>
+            <button mat-menu-item>Contact Us</button>
+          </mat-menu>
+  
+          <!-- Additional Menu Items -->
+          <button mat-button [matMenuTriggerFor]="moreMenu">More</button>
+          <mat-menu #moreMenu="matMenu">
+            <button mat-menu-item>FAQ</button>
+            <button mat-menu-item>Privacy Policy</button>
+            <button mat-menu-item>Terms of Service</button>
+          </mat-menu>
+        </div>
+  
+        <!-- Dark Mode Toggle -->
+        <button mat-icon-button (click)="toggleDarkMode()">
+          <mat-icon>{{ isDarkMode ? 'brightness_7' : 'brightness_4' }}</mat-icon>
+        </button>
+  
+        <!-- New Settings Button -->
+        <button class ="button" (click)="goTo()">
+          Login
+        </button>
+      </mat-toolbar>
+  
+      <!-- Main View -->
+      <div class="main-content">
+        <div card="mid-content">
+          <h1>2025 Financial Outlook</h1>
+          <body data-theme="light"> <!-- Toggle this between 'light' and 'dark' -->
+            <div class="hero-section">
+              <div class="overlay"></div>
+              <div class="content">
+                <h1>The Latest Analysis on Trade, Tariffs, and Geopolitics</h1>
+                <p>
+                  Dive deep into the forces shaping the markets and global economy with timely analysis from our specialists on the trading floor and independent research desks.
+                </p>
+              </div>
+            </div>
+          </body>
+          
+          
+          <div class="charts-grid">
+            <div class="chart-wrapper">
+              <highcharts-chart
+                [Highcharts]="Highcharts"
+                [options]="goldChartOptions"
+                style="width: 100%; height: 100%; display: block;"
+              ></highcharts-chart>
+            </div>
+          
+            <div class="chart-wrapper">
+              <highcharts-chart
+                [Highcharts]="Highcharts"
+                [options]="stockChartOptions"
+                style="width: 100%; height: 100%; display: block;"
+              ></highcharts-chart>
+            </div>
+          
+            <div class="chart-wrapper">
+              <highcharts-chart
+                [Highcharts]="Highcharts"
+                [options]="mutualFundChartOptions"
+                style="width: 100%; height: 100%; display: block;"
+              ></highcharts-chart>
+            </div>
+          </div>
+          
+        </div>
+        
+        <router-outlet></router-outlet>
+      </div>
+  
+      <!-- Footer -->
+      <mat-toolbar color="primary" class="footer">
+        <span>&copy; 2025 FinApp. All Rights Reserved</span>
+      </mat-toolbar>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+  

@@ -1,0 +1,230 @@
+/* Base styles for the sidenav and main layout */
+.sidenav-container {
+  height: 100vh;
+  transition: background-color 0.3s;
+}
+
+.dark-mode {
+  background-color: #121212;
+  color: white;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.4rem;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
+/* Mobile-first approach for responsiveness */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: inline-flex;
+  }
+}
+
+/* Main content styling */
+.main-content {
+  padding: 1rem;
+}
+
+.footer {
+  justify-content: center;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.mat-sidenav {
+  background-color: #fafafa;
+  transition: background-color 0.3s;
+}
+
+.dark-mode .mat-sidenav {
+  background-color: #333;
+}
+
+.mat-toolbar {
+  transition: background-color 0.3s;
+}
+
+.dark-mode .mat-toolbar {
+  background-color: #333;
+}
+
+/* Adjust the menu size */
+.mat-menu-panel {
+  min-width: 150px; /* Ensure the menu is not too wide */
+}
+
+.mat-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+}
+
+.button {
+  color: blue;
+}
+
+.mid-content {}
+
+/* Responsive grid layout for charts */
+/* Charts grid: 1 column by default for small screens */
+/* Base grid: single column for mobile (375px+) */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* Chart wrapper fits grid cell and ensures responsive height */
+.chart-wrapper {
+  width: 100%;
+  height: auto;
+  min-height: 250px;
+  max-height: 100%;
+  box-sizing: border-box;
+}
+
+/* Highcharts base container */
+.highcharts-root,
+highcharts-chart {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Allow charts to scale fluidly */
+.highcharts-container {
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* Small devices: phones (≤480px) */
+@media (max-width: 480px) {
+  .chart-wrapper {
+    min-height: 200px;
+  }
+
+  .charts-grid {
+    gap: 12px;
+    padding: 12px;
+  }
+}
+
+/* Medium screens: tablets (≥600px) */
+@media (min-width: 600px) {
+  .charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Large screens: small laptops/desktops (≥992px) */
+@media (min-width: 992px) {
+  .charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    padding: 20px;
+  }
+
+  .chart-wrapper {
+    min-height: 300px;
+  }
+}
+
+/* Extra large: external monitors (≥1280px) */
+@media (min-width: 1280px) {
+  .charts-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    padding: 24px;
+  }
+
+  .chart-wrapper {
+    min-height: 350px;
+  }
+}
+
+
+
+/* Hero section styling */
+.hero-section {
+  position: relative;
+  background-image: url('https://source.unsplash.com/1600x900/?finance,global');
+  background-size: cover;
+  background-position: center;
+  height: 400px;
+  color: var(--text-color, white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.hero-section .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--overlay-color, #3f51b5); /* Default blue overlay */
+  z-index: 0;
+  transition: background-color 0.3s;
+}
+
+.hero-section .content {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+}
+
+.hero-section h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.hero-section p {
+  font-size: 1.1rem;
+}
+
+/* Dark Mode Support using data-theme */
+[data-theme="dark"] .hero-section {
+  --text-color: #f3f4f6;
+}
+
+[data-theme="dark"] .hero-section .overlay {
+  background-color: rgba(0, 0, 0, 0.7); /* Black overlay in dark mode */
+}
+
+/* Optional: System Preference Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .hero-section {
+    --text-color: #f3f4f6;
+  }
+
+  .hero-section .overlay {
+    background-color: rgba(0, 0, 0, 0.7); /* Black overlay in dark mode */
+  }
+}
+

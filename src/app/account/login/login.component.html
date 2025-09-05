@@ -1,0 +1,46 @@
+<div class="title">
+    <span>
+    <h1 style="color: white">FinApp</h1>
+    <p style="color: white">Unleash your financial planning</p>
+    </span>
+</div>
+<div class="login-container">
+    <mat-card class="login-card">
+        <mat-card-title>Login</mat-card-title>
+        <mat-card-content>
+            <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+                <mat-form-field appearance="outline">
+                    <mat-label>Email</mat-label>
+                    <input matInput type="email" formControlName="email" required>
+                    <mat-error *ngIf="loginForm.controls['email'].invalid && loginForm.controls['email'].touched">
+                        Valid email is required
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Password</mat-label>
+                    <input matInput
+                           [type]="showPassword ? 'text' : 'password'"
+                           formControlName="password"
+                           required>
+                    <button mat-icon-button
+                            matSuffix
+                            (click)="togglePasswordVisibility()"
+                            [attr.aria-label]="'Toggle password visibility'"
+                            [attr.aria-pressed]="showPassword">
+                      <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    </button>
+                    <mat-error *ngIf="loginForm.controls['password'].invalid && loginForm.controls['password'].touched">
+                      Password is required
+                    </mat-error>
+                  </mat-form-field>
+                  
+
+                <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid">Login</button>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</div>
+<footer class="footer">
+    © 2025 FinApp. All rights reserved.
+</footer>
