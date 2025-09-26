@@ -33,11 +33,11 @@ export class ProductPageComponent implements AfterViewInit, OnInit {
 
   Highcharts: typeof Highcharts = Highcharts;
 
-  // Debug holders (optional: bind in template if needed)
+  // Debug holders
   stockApiResponse: any = null;
   goldApiResponse: any = null;
 
-  // Charts
+  // ---------------- STOCK Chart ----------------
   stockChartOptions: Highcharts.Options = {
     title: { text: 'Stock Market Index (Live)' },
     xAxis: { categories: [] },
@@ -46,6 +46,7 @@ export class ProductPageComponent implements AfterViewInit, OnInit {
   };
   loadingStocks = true;
 
+  // ---------------- GOLD Chart ----------------
   goldChartOptions: Highcharts.Options = {
     title: { text: 'Gold Price (Today)' },
     xAxis: { categories: [] },
@@ -54,14 +55,25 @@ export class ProductPageComponent implements AfterViewInit, OnInit {
   };
   loadingGold = true;
 
+  // ---------------- GDP Chart ----------------
+  gdpChartOptions: Highcharts.Options = {
+    title: { text: 'Selected Economies GDP Trend' },
+    chart: { type: 'line' },
+    xAxis: { categories: [] },
+    yAxis: { title: { text: 'GDP (Trillions USD)' } },
+    series: []
+  };
+  loadingGDP = true;
+
   private triedStockDemoFallback = false;
 
   ngOnInit() {
     const savedMode = localStorage.getItem('darkMode');
     this.isDarkMode = savedMode === 'true';
 
-    this.loadStockData(); // will fallback to demo if your key is rate-limited
-    this.loadGoldData();  // metals.dev mapping fixed here
+    this.loadStockData();
+    this.loadGoldData();
+    this.loadGDPData(); // ✅ fetch GDP chart data
   }
 
   ngAfterViewInit() {
@@ -96,21 +108,15 @@ export class ProductPageComponent implements AfterViewInit, OnInit {
   private requestAlphaVantage(apikey: string) {
     const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=MSFT&apikey=${apikey}`;
     this.http.get<any>(url).subscribe(res => {
-      console.log('Stock API Response:', res);
       this.stockApiResponse = res;
 
-      // If rate limited or bad key, AV sends "Information" or "Error Message"
       if (res?.Information || res?.['Error Message'] || !res?.['Time Series (Daily)']) {
-        console.warn('AlphaVantage rate-limited or invalid. info:', res?.Information || res?.['Error Message']);
-
-        // Try demo once so you can at least see a chart
         if (!this.triedStockDemoFallback) {
           this.triedStockDemoFallback = true;
-          this.requestAlphaVantage('demo'); // MSFT works with demo
+          this.requestAlphaVantage('demo');
           return;
         }
 
-        // Final fallback: placeholder
         this.stockChartOptions = {
           ...this.stockChartOptions,
           xAxis: { categories: ['—'] },
@@ -122,7 +128,6 @@ export class ProductPageComponent implements AfterViewInit, OnInit {
 
       const parsed = this.parseAlphaVantageDaily(res);
       if (!parsed) {
-        console.error('No stock data parsed.');
         this.stockChartOptions = {
           ...this.stockChartOptions,
           xAxis: { categories: ['—'] },
@@ -139,7 +144,6 @@ export class ProductPageComponent implements AfterViewInit, OnInit {
       };
       this.loadingStocks = false;
     }, err => {
-      console.error('Error fetching stock data:', err);
       this.stockChartOptions = {
         ...this.stockChartOptions,
         xAxis: { categories: ['—'] },
@@ -150,13 +154,11 @@ export class ProductPageComponent implements AfterViewInit, OnInit {
   }
 
   loadStockData() {
-    // your real key first; auto-fallback to "demo" if rate-limited
     this.requestAlphaVantage('H75X6YUEV06GA73U');
   }
 
   // ---------------- GOLD (metals.dev) ----------------
   private extractGoldPrice(res: any): number | null {
-    // Your console showed: { status: 'success', unit: 'toz', currency: 'USD', metals: { gold: 3755.91, ... } }
     const price = res?.metals?.gold;
     return (typeof price === 'number' && !Number.isNaN(price)) ? price : null;
   }
@@ -166,12 +168,10 @@ export class ProductPageComponent implements AfterViewInit, OnInit {
     const url = `https://api.metals.dev/v1/latest?api_key=${apiKey}&currency=USD&unit=toz`;
 
     this.http.get<any>(url).subscribe(res => {
-      console.log('Gold API Response:', res);
       this.goldApiResponse = res;
 
       const price = this.extractGoldPrice(res);
       if (price == null) {
-        console.error('Could not parse gold price from response.');
         this.goldChartOptions = {
           ...this.goldChartOptions,
           xAxis: { categories: ['Today'] },
@@ -189,13 +189,68 @@ export class ProductPageComponent implements AfterViewInit, OnInit {
       };
       this.loadingGold = false;
     }, err => {
-      console.error('Error fetching gold data:', err);
       this.goldChartOptions = {
         ...this.goldChartOptions,
         xAxis: { categories: ['Today'] },
         series: [{ type: 'column', name: 'Gold (USD/toz)', data: [0] }]
       };
       this.loadingGold = false;
+    });
+  }
+
+  // ---------------- GDP (World Bank, Selected Countries, Trend) ----------------
+  loadGDPData() {
+    const url = 'https://api.worldbank.org/v2/country/all/indicator/NY.GDP.MKTP.CD?date=2020:2025&format=json&per_page=2000';
+
+    const countryFilter = ['US', 'GB', 'IN', 'CN', 'JP', 'DE', 'FR', 'CA', 'BR', 'IT'];
+
+    this.http.get<any>(url).subscribe(res => {
+      const data = res?.[1];
+      if (!Array.isArray(data)) {
+        this.loadingGDP = false;
+        return;
+      }
+
+      const validData = data.filter((d: any) => d.value !== null && countryFilter.includes(d.country.id));
+      if (!validData.length) {
+        this.loadingGDP = false;
+        return;
+      }
+
+      // Collect available years dynamically
+      const years = Array.from(new Set(validData.map((d: any) => d.date))).sort();
+      const minYear = years[0];
+      const maxYear = years[years.length - 1];
+      const seriesData: any[] = [];
+
+      countryFilter.forEach(code => {
+        const countryRecords = validData.filter((d: any) => d.country.id === code);
+        const sortedByYear = years.map(y => {
+          const rec = countryRecords.find((r: any) => r.date === y);
+          return rec ? +(rec.value / 1e12).toFixed(2) : null;
+        });
+
+        if (countryRecords.length > 0) {
+          seriesData.push({
+            type: 'line',
+            name: countryRecords[0].country.value,
+            data: sortedByYear
+          });
+        }
+      });
+
+      this.gdpChartOptions = {
+        chart: { type: 'line' },
+        title: { text: `GDP Trends (${minYear}–${maxYear})` },
+        xAxis: { categories: years },
+        yAxis: { title: { text: 'GDP (Trillion USD)' } },
+        series: seriesData
+      };
+
+      this.loadingGDP = false;
+    }, err => {
+      console.error('Error fetching GDP data', err);
+      this.loadingGDP = false;
     });
   }
 }
